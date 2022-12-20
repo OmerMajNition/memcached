@@ -559,11 +559,15 @@ static void thread_libevent_process(evutil_socket_t fd, short which, void *arg) 
     }
 #endif
 
+    log_debug ("events received:%llu", ev_count);
+
     for (int x = 0; x < ev_count; x++) {
         item = cq_pop(me->ev_queue);
         if (item == NULL) {
             return;
         }
+
+        log_debug ("item->mode:%d init_state:%d", item->mode, item->init_state);
 
         switch (item->mode) {
             case queue_new_conn:
@@ -646,6 +650,7 @@ static LIBEVENT_THREAD *select_thread_round_robin(void)
     int tid = (last_thread + 1) % settings.num_threads;
 
     last_thread = tid;
+    log_debug ("selected RR thread_id:%d", tid);
 
     return threads + tid;
 }
@@ -706,6 +711,8 @@ select:
         goto select;
     }
 
+    log_debug ("selected NAPI thread_id:%d", tid);
+
     return threads + tid;
 }
 
@@ -720,6 +727,7 @@ void dispatch_conn_new(int sfd, enum conn_states init_state, int event_flags,
     CQ_ITEM *item = NULL;
     LIBEVENT_THREAD *thread;
 
+    log_debug ("dispatching new connection napi:%d", settings.num_napi_ids);
     if (!settings.num_napi_ids)
         thread = select_thread_round_robin();
     else

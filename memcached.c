@@ -791,6 +791,7 @@ conn *conn_new(const int sfd, enum conn_states init_state,
         c->write = tcp_write;
     }
 
+    log_debug ("sfd:%d transport:%d init_state:%d proto:%d", sfd, transport, init_state, c->protocol);
     if (IS_UDP(transport)) {
         c->try_read_command = try_read_command_udp;
     } else {
@@ -2976,6 +2977,8 @@ static void drive_machine(conn *c) {
 
     assert(c != NULL);
 
+    log_debug ("driver fd:%d state:%d reqs_per_event:%d", c->sfd, c->state, settings.reqs_per_event);
+
     while (!stop) {
 
         switch(c->state) {
@@ -3147,6 +3150,7 @@ static void drive_machine(conn *c) {
             /* Only process nreqs at a time to avoid starving other
                connections */
 
+            log_debug ("conn_new_cmd state nreqs:%d resp_head:%p rbytes:%d", nreqs, c->resp_head, c->rbytes);
             --nreqs;
             if (nreqs >= 0) {
                 reset_cmd_handler(c);
@@ -3385,6 +3389,7 @@ static void drive_machine(conn *c) {
             assert(false);
             break;
         }
+        log_debug ("after iteration state:%d stop:%s", c->state, stop ? "TRUE" : "FALSE");
     }
 
     return;
@@ -3405,6 +3410,8 @@ void event_handler(const evutil_socket_t fd, const short which, void *arg) {
         conn_close(c);
         return;
     }
+
+    log_debug ("received event on fd:%d c->state:%d", fd, c->state);
 
     drive_machine(c);
 
@@ -3551,6 +3558,7 @@ static int server_socket(const char *interface,
         }
 #endif
 
+        log_debug ("fd:%d transport:%d listen_max:%d", sfd, transport, settings.backlog);
         setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, (void *)&flags, sizeof(flags));
         if (IS_UDP(transport)) {
             maximize_sndbuf(sfd);
@@ -6196,6 +6204,7 @@ int main (int argc, char **argv) {
             }
         }
 
+        log_debug ("tcp_port:%d udp_port:%d", settings.port, settings.udpport);
         errno = 0;
         if (settings.port && server_sockets(settings.port, tcp_transport,
                                            portnumber_file)) {
