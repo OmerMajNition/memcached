@@ -13,7 +13,6 @@
  *      Anatoly Vorobey <mellon@pobox.com>
  *      Brad Fitzpatrick <brad@danga.com>
  */
-#include "utils.h"
 #include "memcached.h"
 #include "storage.h"
 #include "authfile.h"
