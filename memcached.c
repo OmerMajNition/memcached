@@ -13,6 +13,7 @@
  *      Anatoly Vorobey <mellon@pobox.com>
  *      Brad Fitzpatrick <brad@danga.com>
  */
+#include "utils.h"
 #include "memcached.h"
 #include "storage.h"
 #include "authfile.h"
@@ -3078,6 +3079,7 @@ static void drive_machine(conn *c) {
                 ssl_v = (void*) ssl;
 #endif
 
+                log_debug ("Accepted new connection fd:%d", sfd);
                 dispatch_conn_new(sfd, conn_new_cmd, EV_READ | EV_PERSIST,
                                      READ_BUFFER_CACHED, c->transport, ssl_v, c->tag, c->protocol);
             }
